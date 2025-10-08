@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Detail Warga - {{ object.nama_lengkap }}</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #e8f4fd;
+        padding-bottom: 20px;
+      }
+      .detail-card {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+      .detail-row {
+        display: flex;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+      }
+      .detail-label {
+        font-weight: bold;
+        width: 200px;
+        color: #333;
+      }
+      .detail-value {
+        flex: 1;
+        color: #666;
+      }
+      .back-link {
+        display: inline-block;
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-top: 20px;
+      }
+      .back-link:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Detail Warga</h1>
+        <h2>{{ object.nama_lengkap }}</h2>
+      </div>
+
+      <div class="detail-card">
+        <div class="detail-row">
+          <div class="detail-label">NIK:</div>
+          <div class="detail-value">{{ object.nik }}</div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">Nama Lengkap:</div>
+          <div class="detail-value">{{ object.nama_lengkap }}</div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">Alamat:</div>
+          <div class="detail-value">{{ object.alamat }}</div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">No. Telepon:</div>
+          <div class="detail-value">
+            {{ object.no_telepon|default:"Tidak ada" }}
+          </div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">Tanggal Registrasi:</div>
+          <div class="detail-value">
+            {{ object.tanggal_registrasi|date:"d F Y, H:i" }} WIB
+          </div>
+        </div>
+      </div>
+
+      <hr />
+      <h2>Daftar Pengaduan oleh {{ object.nama_lengkap }}</h2>
+
+      <ul>
+        {% for aduan in object.pengaduan.all %}
+        <li>
+          <strong>{{ aduan.judul }}</strong> (Status: {{ aduan.get_status_display }})
+          <p>{{ aduan.deskripsi }}</p>
+        </li>
+        {% empty %}
+        <li>Warga ini belum pernah membuat pengaduan.</li>
+        {% endfor %}
+      </ul>
+
+
+      <a href="{% url 'warga.list' %}" class="back-link"
+        >← Kembali ke Daftar Warga</a
+      

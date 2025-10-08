@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daftar Pengaduan</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+      }
+      .aduan {
+        border-bottom: 1px solid #eee;
+        padding: 15px 0;
+      }
+      .aduan h3 {
+        margin: 0 0 5px;
+      }
+      .meta {
+        color: #666;
+        font-size: 0.9em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Daftar Semua Pengaduan</h1>
+
+      <ul>
+        {% for object in object_list %}
+        <li class="aduan">
+          <h3>{{ object.judul }}</h3>
+          <div class="meta">
+            Pelapor: {{ object.pelapor.nama_lengkap }} | Status: {{
+            object.get_status_display }} | {{ object.tanggal_lapor|date:"d F Y,
+            H:i" }}
+          </div>
+          <p>{{ object.deskripsi }}</p>
+        </li>
+        {% empty %}
+        <li>Tidak ada pengaduan.</li>
+        {% endfor %}
+      </ul>
+
+      <a href="{% url 'warga.list' %}">← Kembali ke Daftar Warga</a>
+    </div>
+  </body>
+</html>
