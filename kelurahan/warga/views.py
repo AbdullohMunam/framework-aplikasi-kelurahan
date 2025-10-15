@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from .models import Warga, Pengaduan
 from .forms import WargaForm, PengaduanForm
@@ -20,6 +20,16 @@ class WargaCreateView(CreateView):
     template_name = 'warga/warga_form.html'
     success_url = reverse_lazy('warga-list')
 
+class WargaUpdateView(UpdateView):
+    model = Warga
+    form_class = WargaForm
+    template_name = 'warga/warga_form.html'
+    success_url = reverse_lazy('warga-list')
+
+class WargaDeleteView(DeleteView):
+    model = Warga
+    template_name = 'warga/warga_confirm_delete.html'
+    success_url = reverse_lazy('warga-list')
 
 class PengaduanCreateView(CreateView):
     model = Pengaduan

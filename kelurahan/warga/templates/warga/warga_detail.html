@@ -62,8 +62,9 @@
   <body>
     <div class="container">
       <div class="header">
-        <h1>Detail Warga</h1>
-        <h2>{{ object.nama_lengkap }}</h2>
+        <h1>Detail Warga: {{ object.nama_lengkap }}</h1>
+        <a href="{% url 'warga-edit' object.pk %}">Edit Data</a> | 
+        <a href="{% url 'warga-hapus' object.pk %}">Hapus Data</a>
       </div>
 
       <div class="detail-card">
@@ -112,6 +113,8 @@
       </ul>
 
 
-      <a href="{% url 'warga.list' %}" class="back-link"
-        >← Kembali ke Daftar Warga</a
-      
+      <a href="{% url 'warga-list' %}" class="back-link"
+        >← Kembali ke Daftar Warga</a>
+    </div>
+  </body>
+</html>
