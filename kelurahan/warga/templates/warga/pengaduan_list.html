@@ -11,42 +11,83 @@
         background-color: #f5f5f5;
       }
       .container {
-        max-width: 900px;
+        max-width: 800px;
         margin: 0 auto;
-        background: white;
+        background-color: white;
         padding: 30px;
         border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
-      .aduan {
-        border-bottom: 1px solid #eee;
-        padding: 15px 0;
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #e8f4fd;
+        padding-bottom: 20px;
       }
-      .aduan h3 {
-        margin: 0 0 5px;
+      ul {
+        margin-top: 20px;
       }
-      .meta {
-        color: #666;
-        font-size: 0.9em;
+      .pengaduan-actions {
+        display: inline-flex;
+        gap: 8px;
+        vertical-align: middle;
+        margin-left: 10px;
+      }
+      .btn-edit {
+        padding: 6px 16px;
+        border-radius: 4px;
+        background: #007bff;
+        color: #fff;
+        border: none;
+        text-decoration: none;
+        font-size: 14px;
+      }
+      .btn-edit:hover {
+        background: #0056b3;
+      }
+      .btn-hapus {
+        padding: 6px 16px;
+        border-radius: 4px;
+        background: #dc3545;
+        color: #fff;
+        border: none;
+        text-decoration: none;
+        font-size: 14px;
+      }
+      .btn-hapus:hover {
+        background: #a71d2a;
+      }
+      .back-link {
+        display: inline-block;
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-top: 20px;
+      }
+      .back-link:hover {
+        background-color: #0056b3;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>Daftar Semua Pengaduan</h1>
-
+      <h1>Daftar Pengaduan</h1>
       <ul>
         {% for pengaduan in object_list %}
-        <li>
-          {{ pengaduan.judul }} - {{ pengaduan.deskripsi }}
-          <a href="{% url 'pengaduan-edit' pengaduan.pk %}">Edit</a> |
-          <a href="{% url 'pengaduan-hapus' pengaduan.pk %}">Hapus</a>
-        </li>
+          <li>
+            {{ pengaduan.judul }} - {{ pengaduan.deskripsi }}
+            <span class="pengaduan-actions">
+              <a href="{% url 'pengaduan-edit' pengaduan.pk %}" class="btn-edit">Edit</a>
+              <a href="{% url 'pengaduan-hapus' pengaduan.pk %}" class="btn-hapus">Hapus</a>
+            </span>
+          </li>
         {% empty %}
-        <li>Belum ada data pengaduan yang terdaftar</li>
+          <li>Belum ada data pengaduan yang terdaftar</li>
         {% endfor %}
       </ul>
-
-      <a href="{% url 'warga-list' %}">← Kembali ke Daftar Warga</a>
+      <a href="{% url 'warga-list' %}" class="back-link">← Kembali ke Daftar Warga</a>
     </div>
   </body>
 </html>

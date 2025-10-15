@@ -3,28 +3,71 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Daftar Warga</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #e8f4fd;
+        padding-bottom: 20px;
+      }
+      ul {
+        margin-top: 20px;
+      }
+      .back-link, a.action-link {
+        display: inline-block;
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-top: 10px;
+      }
+      .back-link:hover, a.action-link:hover {
+        background-color: #0056b3;
+      }
+      hr {
+        margin: 20px 0;
+      }
+    </style>
   </head>
-
   <body>
-    <h1>Daftar Warga</h1>
-    <a href="{% url 'warga-tambah' %}">Tambah Warga Baru</a>
-    <br>
-    <a href="{% url 'pengaduan-tambah' %}">Buat Pengaduan Baru</a>
-    <hr>
-    <p><a href="{% url 'pengaduan-list' %}">Lihat Semua Pengaduan</a></p>
-    <ul>
-      {% for warga in object_list %}
-      <li>
-        <a href="{% url 'warga-detail' warga.pk %}">{{ warga.nama_lengkap }}</a>
-        <!-- - NIK: {{ warga.nik }} -->
-      </li>
-      <!-- <li>Nomor Telepon: {{ warga.no_telepon }}</li> -->
-
-      {% empty %}
-
-      <li>Belum ada data warga yang terdaftar</li>
-      {% endfor %}
-    </ul>
+    <div class="container">
+      <h1>Daftar Warga</h1>
+      <ul style="list-style: none; padding: 0;"></ul>
+        {% for warga in object_list %}
+        <li style="background: #e8f4fd; margin-bottom: 12px; padding: 16px 20px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); display: flex; align-items: center;">
+          <a href="{% url 'warga-detail' warga.pk %}" style="color: #007bff; font-weight: bold; text-decoration: none; flex: 1;">
+        {{ warga.nama_lengkap }}
+          </a>
+          <!-- - NIK: {{ warga.nik }} -->
+        </li>
+        <!-- <li>Nomor Telepon: {{ warga.no_telepon }}</li> -->
+        {% empty %}
+        <li style="background: #ffeaea; padding: 16px 20px; border-radius: 6px; color: #b30000;">
+          Belum ada data warga yang terdaftar
+        </li>
+        {% endfor %}
+      </ul>
+      <br><hr>
+      <a href="{% url 'warga-tambah' %}" class="action-link">Tambah Warga Baru</a>
+      <br>
+      <a href="{% url 'pengaduan-tambah' %}" class="action-link">Buat Pengaduan Baru</a>
+      <br>
+      <a href="{% url 'pengaduan-list' %}" class="action-link">Lihat Semua Pengaduan</a>
+    </div>
   </body>
 </html>

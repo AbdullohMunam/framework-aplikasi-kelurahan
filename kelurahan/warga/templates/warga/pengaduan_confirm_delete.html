@@ -1,15 +1,64 @@
 <!DOCTYPE html>
-<html>
-<head>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Konfirmasi Hapus Pengaduan</title>
-</head>
-<body>
-    <h1>Hapus Pengaduan</h1>
-    <p>Apakah Anda yakin ingin menghapus pengaduan: <strong>{{ object.judul }}</strong>?</p>
-    <form method="post">
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #e8f4fd;
+        padding-bottom: 20px;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      .back-link, a {
+        display: inline-block;
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-top: 20px;
+      }
+      .back-link:hover, a:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Hapus Pengaduan</h1>
+      <p>Apakah Anda yakin ingin menghapus pengaduan: <strong>{{ object.judul }}</strong>?</p>
+      <form method="post">
         {% csrf_token %}
         <button type="submit">Ya, Hapus</button>
         <a href="{% url 'pengaduan-list' %}">Batal</a>
-    </form>
-</body>
+      </form>
+      <a href="{% url 'pengaduan-list' %}" class="back-link">← Kembali ke Daftar Pengaduan</a>
+    </div>
+  </body>
 </html>
