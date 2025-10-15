@@ -35,18 +35,14 @@
       <h1>Daftar Semua Pengaduan</h1>
 
       <ul>
-        {% for object in object_list %}
-        <li class="aduan">
-          <h3>{{ object.judul }}</h3>
-          <div class="meta">
-            Pelapor: {{ object.pelapor.nama_lengkap }} | Status: {{
-            object.get_status_display }} | {{ object.tanggal_lapor|date:"d F Y,
-            H:i" }}
-          </div>
-          <p>{{ object.deskripsi }}</p>
+        {% for pengaduan in object_list %}
+        <li>
+          {{ pengaduan.judul }} - {{ pengaduan.deskripsi }}
+          <a href="{% url 'pengaduan-edit' pengaduan.pk %}">Edit</a> |
+          <a href="{% url 'pengaduan-hapus' pengaduan.pk %}">Hapus</a>
         </li>
         {% empty %}
-        <li>Tidak ada pengaduan.</li>
+        <li>Belum ada data pengaduan yang terdaftar</li>
         {% endfor %}
       </ul>
 

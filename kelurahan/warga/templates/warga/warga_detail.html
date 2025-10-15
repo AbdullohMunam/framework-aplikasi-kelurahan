@@ -102,10 +102,12 @@
       <h2>Daftar Pengaduan oleh {{ object.nama_lengkap }}</h2>
 
       <ul>
-        {% for aduan in object.pengaduan.all %}
+        {% for aduan in object.pengaduan_set.all %}
         <li>
           <strong>{{ aduan.judul }}</strong> (Status: {{ aduan.get_status_display }})
           <p>{{ aduan.deskripsi }}</p>
+          <a href="{% url 'pengaduan-edit' aduan.pk %}">Edit</a> |
+          <a href="{% url 'pengaduan-hapus' aduan.pk %}">Hapus</a>
         </li>
         {% empty %}
         <li>Warga ini belum pernah membuat pengaduan.</li>
