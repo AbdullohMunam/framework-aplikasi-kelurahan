@@ -22,4 +22,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('warga/', include('warga.urls')),
     path('', lambda request: redirect('warga/', permanent=True)),
+    path('api/', include('warga.api_urls')), # URL untuk API
+
 ]
