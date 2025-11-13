@@ -1,3 +1,23 @@
 # Ignore virtual environment folder
 /myenv/
 myenv/
+.venv/
+venv/
+venv*/
+venv-*/
+venv_*/
+env/
+env*/
+env-*/
+env_*/
+.env/
+.env*/
+envs/
+.envs/
+.python_env/
+.pyenv/
+.Python
+pipenv/
+poetry.lock
+.venv-*
+.venv_*
