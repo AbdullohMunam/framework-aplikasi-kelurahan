@@ -37,8 +37,7 @@ Linux (bash/wsl)
 - python manage.py runserver 0.0.0.0:8000
 - Buka: http://localhost:8000 (atau http://<host-ip>:8000)
 
-Windows (CMD / PowerShell / WSL)
-- Rekomendasi: gunakan WSL2 (Ubuntu) jika tersedia. Jika menggunakan native Windows:
+Windows (CMD / PowerShell)
 
 CMD
 - python -m venv .venv

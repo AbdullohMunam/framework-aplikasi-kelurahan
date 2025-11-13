@@ -17,11 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect
+from warga.views import PengaduanListView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('warga/', include('warga.urls')),
-    path('', lambda request: redirect('warga/', permanent=True)),
-    path('api/', include('warga.api_urls')), # URL untuk API
-
+    path('pengaduan/', PengaduanListView.as_view(), name='pengaduan-list'),  # direct HTML page at /pengaduan/
+    path('', lambda request: redirect('/warga/', permanent=True)),
+    path('api/', include('warga.api_urls')),  # API routes now have names like 'api-pengaduan-list'
 ]
