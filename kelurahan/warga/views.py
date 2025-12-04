@@ -5,6 +5,7 @@ from .models import Warga, Pengaduan
 from .forms import WargaForm, PengaduanForm
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework import viewsets # Impor viewsets
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from .serializers import WargaSerializer, PengaduanSerializer
 
 
@@ -58,6 +59,7 @@ class WargaViewSet(viewsets.ModelViewSet):
     """
     queryset = Warga.objects.all().order_by('-tanggal_registrasi')
     serializer_class = WargaSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 class PengaduanViewSet(viewsets.ModelViewSet):
     """
@@ -65,3 +67,4 @@ class PengaduanViewSet(viewsets.ModelViewSet):
     """
     queryset = Pengaduan.objects.all().order_by('-id')
     serializer_class = PengaduanSerializer
+    permission_classes = [IsAdminUser]

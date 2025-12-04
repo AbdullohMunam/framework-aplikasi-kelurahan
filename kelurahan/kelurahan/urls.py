@@ -18,11 +18,13 @@ from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect
 from warga.views import PengaduanListView
+from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('warga/', include('warga.urls')),
     path('pengaduan/', PengaduanListView.as_view(), name='pengaduan-list'),  # direct HTML page at /pengaduan/
+    path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
     path('', lambda request: redirect('/warga/', permanent=True)),
     path('api/', include('warga.api_urls')),  # API routes now have names like 'api-pengaduan-list'
 ]
