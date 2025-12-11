@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Warga & Pengaduan</title>
+    <style>
+        /* Menggunakan style dasar dari file upload Anda */
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+        h1, h2 { text-align: center; border-bottom: 2px solid #e8f4fd; padding-bottom: 20px; color: #333; }
+        
+        /* Tombol & Navigasi */
+        .btn { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; text-decoration: none; font-size: 14px; display: inline-block; margin: 2px; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn:hover { opacity: 0.9; }
+
+        /* List Styling */
+        .list-item { background: #e8f4fd; margin-bottom: 12px; padding: 16px 20px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; }
+        .item-title { font-weight: bold; color: #007bff; cursor: pointer; font-size: 1.1em; }
+        
+        /* Form Styling */
+        form { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        input, textarea, select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        label { font-weight: bold; margin-bottom: 5px; display: block; }
+        
+        /* Utility */
+        .hidden { display: none; }
+        .detail-row { display: flex; border-bottom: 1px solid #eee; padding: 10px 0; }
+        .detail-label { font-weight: bold; width: 150px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <nav style="margin-bottom: 20px; text-align: center;">
+        <button class="btn btn-primary" onclick="showWargaList()">Daftar Warga</button>
+        <button class="btn btn-primary" onclick="showPengaduanList()">Daftar Pengaduan</button>
+    </nav>
+
+    <div id="view-warga-list" class="view-section">
+        <h1>Daftar Warga</h1>
+        <button class="btn btn-primary" onclick="showWargaForm()">+ Tambah Warga</button>
+        <ul id="warga-container" style="list-style: none; padding: 0; margin-top: 20px;">
+            </ul>
+    </div>
+
+    <div id="view-warga-detail" class="view-section hidden">
+        <h1>Detail Warga</h1>
+        <div id="detail-content"></div>
+        <hr>
+        <h3>Riwayat Pengaduan</h3>
+        <ul id="warga-pengaduan-list" style="list-style: none; padding: 0;"></ul>
+        <button class="btn btn-secondary" onclick="showWargaList()">Kembali</button>
+    </div>
+
+    <div id="view-warga-form" class="view-section hidden">
+        <h1 id="form-warga-title">Form Warga</h1>
+        <form id="warga-form">
+            <input type="hidden" id="warga-id">
+            <div>
+                <label>Nama Lengkap</label>
+                <input type="text" id="warga-nama" required>
+            </div>
+            <div>
+                <label>NIK</label>
+                <input type="number" id="warga-nik" required>
+            </div>
+            <div>
+                <label>No. Telepon</label>
+                <input type="text" id="warga-telp">
+            </div>
+            <div>
+                <label>Alamat</label>
+                <textarea id="warga-alamat" rows="3"></textarea>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+                <button type="button" class="btn btn-secondary" onclick="showWargaList()">Batal</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="view-pengaduan-list" class="view-section hidden">
+        <h1>Daftar Pengaduan</h1>
+        <button class="btn btn-primary" onclick="showPengaduanForm()">+ Buat Pengaduan</button>
+        <ul id="pengaduan-container" style="list-style: none; padding: 0; margin-top: 20px;"></ul>
+    </div>
+
+    <div id="view-pengaduan-form" class="view-section hidden">
+        <h1 id="form-pengaduan-title">Form Pengaduan</h1>
+        <form id="pengaduan-form">
+            <input type="hidden" id="pengaduan-id">
+            <div>
+                <label>Pelapor (Warga)</label>
+                <select id="pengaduan-warga" required>
+                    <option value="">-- Pilih Warga --</option>
+                </select>
+            </div>
+            <div>
+                <label>Judul</label>
+                <input type="text" id="pengaduan-judul" required>
+            </div>
+            <div>
+                <label>Deskripsi</label>
+                <textarea id="pengaduan-deskripsi" rows="4" required></textarea>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Kirim</button>
+                <button type="button" class="btn btn-secondary" onclick="showPengaduanList()">Batal</button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
