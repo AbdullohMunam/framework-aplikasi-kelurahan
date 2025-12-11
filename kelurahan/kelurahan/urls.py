@@ -27,4 +27,5 @@ urlpatterns = [
     path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
     path('', lambda request: redirect('/warga/', permanent=True)),
     path('api/', include('warga.api_urls')),  # API routes now have names like 'api-pengaduan-list'
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),  # DRF's login/logout views
 ]
