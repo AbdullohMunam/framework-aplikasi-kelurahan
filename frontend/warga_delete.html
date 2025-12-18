@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hapus Warga</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+      .container { max-width: 800px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+      h1 { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e8f4fd; padding-bottom: 20px; }
+      button { background-color: #dc3545; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+      button:hover { background-color: #a71d2a; }
+      .cancel-link { margin-left: 10px; color: #007bff; text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Hapus Warga</h1>
+      <p>Apakah Anda yakin ingin menghapus data warga: <strong id="name-display">...</strong>?</p>
+      
+      <div style="margin-top:20px;">
+          <button id="btn-confirm">Ya, Hapus</button>
+          <a href="#" id="link-cancel" class="cancel-link">Batal</a>
+      </div>
+    </div>
+
+    <script>
+      const id = new URLSearchParams(window.location.search).get('id');
+      const API_URL = `http://127.0.0.1:8000/api/warga/${id}/`;
+
+      // Ambil nama untuk ditampilkan
+      fetch(API_URL)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('name-display').innerText = data.nama_lengkap;
+            document.getElementById('link-cancel').href = `warga_detail.html?id=${id}`;
+        });
+
+      document.getElementById('btn-confirm').onclick = async () => {
+          const res = await fetch(API_URL, { method: 'DELETE' });
+          if (res.ok) {
+              alert('Terhapus');
+              window.location.href = 'index.html';
+          } else {
+              alert('Gagal menghapus');
+          }
+      };
+    </script>
+  </body>
+</html>

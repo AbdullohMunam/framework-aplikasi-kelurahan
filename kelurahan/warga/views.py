@@ -3,11 +3,16 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.urls import reverse_lazy
 from .models import Warga, Pengaduan
 from .forms import WargaForm, PengaduanForm
+
+# Imports untuk API
 from rest_framework.generics import ListAPIView, RetrieveAPIView
-from rest_framework import viewsets # Impor viewsets
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
+from rest_framework import viewsets 
+# PERBAIKAN 1: Tambahkan AllowAny di import sini
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser, AllowAny
 from .serializers import WargaSerializer, PengaduanSerializer
 from rest_framework.filters import SearchFilter, OrderingFilter
+
+# --- VIEW UNTUK TEMPLATE DJANGO LAMA (Boleh dibiarkan) ---
 
 class WargaListView(ListView):
     model = Warga
@@ -53,13 +58,17 @@ class PengaduanDeleteView(DeleteView):
     template_name = 'warga/pengaduan_confirm_delete.html'
     success_url = reverse_lazy('pengaduan-list')
     
+# --- VIEW UNTUK API (YANG DIGUNAKAN FRONTEND JS) ---
+
 class WargaViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows warga to be viewed or edited.
     """
     queryset = Warga.objects.all().order_by('-tanggal_registrasi')
     serializer_class = WargaSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    
+    # PERBAIKAN 2: Gunakan AllowAny (Huruf Besar)
+    permission_classes = [AllowAny]
 
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['nama_lengkap', 'nik', 'alamat']
@@ -72,9 +81,10 @@ class PengaduanViewSet(viewsets.ModelViewSet):
     """
     queryset = Pengaduan.objects.all().order_by('-id')
     serializer_class = PengaduanSerializer
-    permission_classes = [IsAdminUser]
+    
+    # PERBAIKAN 3: Ubah IsAdminUser menjadi AllowAny agar frontend bisa akses tanpa login
+    permission_classes = [AllowAny]
 
-    # Add filtering, searching and ordering for Pengaduan
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['judul', 'deskripsi', 'status']
     ordering_fields = ['status', 'tanggal_lapor']

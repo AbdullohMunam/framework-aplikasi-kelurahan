@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Detail Warga</title>
+    <style>
+      /* Style dari warga_detail.html asli */
+      body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+      .container { max-width: 800px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+      .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e8f4fd; padding-bottom: 20px; }
+      .detail-card { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+      .detail-row { display: flex; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+      .detail-label { font-weight: bold; width: 200px; color: #333; }
+      .detail-value { flex: 1; color: #666; }
+      .back-link { display: inline-block; background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+      .back-link:hover { background-color: #0056b3; }
+      .pengaduan-action { margin-left: 10px; color: #007bff; text-decoration: none; font-size: 0.9em; }
+      .pengaduan-action:hover { text-decoration: underline; color: #0056b3; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Detail Warga: <span id="header-nama">Loading...</span></h1>
+        <a id="link-edit" href="#">Edit Data</a> | 
+        <a id="link-hapus" href="#">Hapus Data</a>
+      </div>
+
+      <div class="detail-card">
+        <div class="detail-row">
+          <div class="detail-label">NIK:</div>
+          <div class="detail-value" id="det-nik">-</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Nama Lengkap:</div>
+          <div class="detail-value" id="det-nama">-</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Alamat:</div>
+          <div class="detail-value" id="det-alamat">-</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">No. Telepon:</div>
+          <div class="detail-value" id="det-telepon">-</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Tanggal Registrasi:</div>
+          <div class="detail-value" id="det-tanggal">-</div>
+        </div>
+      </div>
+
+      <hr />
+      <h2>Daftar Pengaduan oleh <span id="sub-header-nama">...</span></h2>
+
+      <ul id="list-pengaduan">
+        <li>Memuat riwayat pengaduan...</li>
+      </ul>
+
+      <a href="index.html" class="back-link">← Kembali ke Daftar Warga</a>
+    </div>
+
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const wargaId = urlParams.get('id');
+      
+      const API_WARGA = `http://127.0.0.1:8000/api/warga/${wargaId}/`;
+      // Note: Idealnya backend punya fitur filter ?warga=ID. 
+      // Untuk sekarang kita ambil list dan filter manual di JS.
+      const API_PENGADUAN = `http://127.0.0.1:8000/api/pengaduan/`; 
+
+      async function getDetail() {
+        if (!wargaId) return alert('ID tidak ditemukan');
+
+        try {
+            // 1. Ambil Data Warga
+            const resW = await fetch(API_WARGA);
+            if (!resW.ok) throw new Error('Gagal mengambil data warga');
+            const warga = await resW.json();
+
+            // Render Warga
+            document.getElementById('header-nama').innerText = warga.nama_lengkap;
+            document.getElementById('sub-header-nama').innerText = warga.nama_lengkap;
+            document.getElementById('det-nik').innerText = warga.nik;
+            document.getElementById('det-nama').innerText = warga.nama_lengkap;
+            document.getElementById('det-alamat').innerText = warga.alamat;
+            document.getElementById('det-telepon').innerText = warga.no_telepon || 'Tidak ada';
+            document.getElementById('det-tanggal').innerText = new Date(warga.tanggal_registrasi).toLocaleString('id-ID');
+
+            document.getElementById('link-edit').href = `warga_form.html?id=${warga.id}`;
+            document.getElementById('link-hapus').href = `warga_delete.html?id=${warga.id}`;
+
+            // 2. Ambil Pengaduan & Filter
+            // Karena pagination aktif, kita harus pastikan mengambil 'results'
+            const resP = await fetch(API_PENGADUAN); 
+            const dataP = await resP.json();
+            
+            // Cek apakah dataP berupa array langsung atau object pagination
+            let allAduan = [];
+            if (dataP.results) {
+                allAduan = dataP.results; // Ambil dari pagination
+            } else if (Array.isArray(dataP)) {
+                allAduan = dataP;
+            }
+
+            // Filter yang punya warga == wargaId
+            const myAduan = allAduan.filter(a => a.warga == wargaId);
+            renderPengaduan(myAduan);
+
+        } catch (err) {
+            console.error(err);
+            document.getElementById('list-pengaduan').innerHTML = `<li style="color:red">${err.message}</li>`;
+        }
+      }
+
+      function renderPengaduan(list) {
+        const ul = document.getElementById('list-pengaduan');
+        ul.innerHTML = '';
+        if (list.length === 0) {
+            ul.innerHTML = '<li>Warga ini belum pernah membuat pengaduan.</li>';
+            return;
+        }
+        list.forEach(aduan => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <strong>${aduan.judul}</strong> (Status: ${aduan.status || '-'})
+                <p>${aduan.deskripsi}</p>
+                <a href="pengaduan_form.html?id=${aduan.id}" class="pengaduan-action">Edit</a> |
+                <a href="pengaduan_delete.html?id=${aduan.id}" class="pengaduan-action">Hapus</a>
+            `;
+            ul.appendChild(li);
+        });
+      }
+
+      getDetail();
+    </script>
+  </body>
+</html>

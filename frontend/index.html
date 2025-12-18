@@ -1,121 +1,134 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Warga & Pengaduan</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daftar Warga (Frontend)</title>
     <style>
-        /* Menggunakan style dasar dari file upload Anda */
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
-        .container { max-width: 800px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
-        h1, h2 { text-align: center; border-bottom: 2px solid #e8f4fd; padding-bottom: 20px; color: #333; }
-        
-        /* Tombol & Navigasi */
-        .btn { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; text-decoration: none; font-size: 14px; display: inline-block; margin: 2px; }
-        .btn-primary { background: #007bff; color: white; }
-        .btn-danger { background: #dc3545; color: white; }
-        .btn-secondary { background: #6c757d; color: white; }
-        .btn:hover { opacity: 0.9; }
-
-        /* List Styling */
-        .list-item { background: #e8f4fd; margin-bottom: 12px; padding: 16px 20px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; }
-        .item-title { font-weight: bold; color: #007bff; cursor: pointer; font-size: 1.1em; }
-        
-        /* Form Styling */
-        form { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
-        input, textarea, select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
-        label { font-weight: bold; margin-bottom: 5px; display: block; }
-        
-        /* Utility */
-        .hidden { display: none; }
-        .detail-row { display: flex; border-bottom: 1px solid #eee; padding: 10px 0; }
-        .detail-label { font-weight: bold; width: 150px; }
+      /* CSS sama persis seperti sebelumnya */
+      body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+      .container { max-width: 800px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+      h1 { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e8f4fd; padding-bottom: 20px; }
+      ul { margin-top: 20px; list-style: none; padding: 0; }
+      .warga-item { background: #e8f4fd; margin-bottom: 12px; padding: 16px 20px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); display: flex; align-items: center; }
+      .warga-link { color: #007bff; font-weight: bold; text-decoration: none; flex: 1; cursor: pointer; }
+      .empty-message { background: #ffeaea; padding: 16px 20px; border-radius: 6px; color: #b30000; }
+      a.action-link { display: inline-block; background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px; }
+      a.action-link:hover { background-color: #0056b3; }
+      hr { margin: 20px 0; }
     </style>
-</head>
-<body>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Daftar Warga</h1>
+      
+      <ul id="warga-list">
+        <li>Sedang memuat data...</li>
+      </ul>
 
-<div class="container">
-    <nav style="margin-bottom: 20px; text-align: center;">
-        <button class="btn btn-primary" onclick="showWargaList()">Daftar Warga</button>
-        <button class="btn btn-primary" onclick="showPengaduanList()">Daftar Pengaduan</button>
-    </nav>
+      <div id="pagination-controls" style="text-align: center; margin-top: 20px;"></div>
 
-    <div id="view-warga-list" class="view-section">
-        <h1>Daftar Warga</h1>
-        <button class="btn btn-primary" onclick="showWargaForm()">+ Tambah Warga</button>
-        <ul id="warga-container" style="list-style: none; padding: 0; margin-top: 20px;">
-            </ul>
+      <br><hr>
+      <a href="warga_form.html" class="action-link">Tambah Warga Baru</a>
+      <br>
+      <a href="pengaduan_form.html" class="action-link">Buat Pengaduan Baru</a>
+      <br>
+      <a href="pengaduan_list.html" class="action-link">Lihat Semua Pengaduan</a>
     </div>
 
-    <div id="view-warga-detail" class="view-section hidden">
-        <h1>Detail Warga</h1>
-        <div id="detail-content"></div>
-        <hr>
-        <h3>Riwayat Pengaduan</h3>
-        <ul id="warga-pengaduan-list" style="list-style: none; padding: 0;"></ul>
-        <button class="btn btn-secondary" onclick="showWargaList()">Kembali</button>
-    </div>
+    <script>
+      // KONFIGURASI API
+      let currentUrl = 'http://127.0.0.1:8000/api/warga/'; 
 
-    <div id="view-warga-form" class="view-section hidden">
-        <h1 id="form-warga-title">Form Warga</h1>
-        <form id="warga-form">
-            <input type="hidden" id="warga-id">
-            <div>
-                <label>Nama Lengkap</label>
-                <input type="text" id="warga-nama" required>
-            </div>
-            <div>
-                <label>NIK</label>
-                <input type="number" id="warga-nik" required>
-            </div>
-            <div>
-                <label>No. Telepon</label>
-                <input type="text" id="warga-telp">
-            </div>
-            <div>
-                <label>Alamat</label>
-                <textarea id="warga-alamat" rows="3"></textarea>
-            </div>
-            <div>
-                <button type="submit" class="btn btn-primary">Simpan</button>
-                <button type="button" class="btn btn-secondary" onclick="showWargaList()">Batal</button>
-            </div>
-        </form>
-    </div>
+      // Fungsi untuk mengambil data dari Backend
+      async function fetchWarga(url) {
+        try {
+          const response = await fetch(url);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
 
-    <div id="view-pengaduan-list" class="view-section hidden">
-        <h1>Daftar Pengaduan</h1>
-        <button class="btn btn-primary" onclick="showPengaduanForm()">+ Buat Pengaduan</button>
-        <ul id="pengaduan-container" style="list-style: none; padding: 0; margin-top: 20px;"></ul>
-    </div>
+          const data = await response.json();
+          renderWarga(data);
+          
+        } catch (error) {
+          console.error('Ada masalah saat mengambil data:', error);
+          document.getElementById('warga-list').innerHTML = `
+            <li class="empty-message">
+              Gagal mengambil data dari server. Pastikan backend menyala. <br>
+              Error: ${error.message}
+            </li>`;
+        }
+      }
 
-    <div id="view-pengaduan-form" class="view-section hidden">
-        <h1 id="form-pengaduan-title">Form Pengaduan</h1>
-        <form id="pengaduan-form">
-            <input type="hidden" id="pengaduan-id">
-            <div>
-                <label>Pelapor (Warga)</label>
-                <select id="pengaduan-warga" required>
-                    <option value="">-- Pilih Warga --</option>
-                </select>
-            </div>
-            <div>
-                <label>Judul</label>
-                <input type="text" id="pengaduan-judul" required>
-            </div>
-            <div>
-                <label>Deskripsi</label>
-                <textarea id="pengaduan-deskripsi" rows="4" required></textarea>
-            </div>
-            <div>
-                <button type="submit" class="btn btn-primary">Kirim</button>
-                <button type="button" class="btn btn-secondary" onclick="showPengaduanList()">Batal</button>
-            </div>
-        </form>
-    </div>
+      // Fungsi untuk menampilkan data ke HTML (DOM Manipulation)
+      function renderWarga(response) {
+        const listContainer = document.getElementById('warga-list');
+        listContainer.innerHTML = ''; 
 
-</div>
+        // --- PERBAIKAN UTAMA DI SINI ---
+        // Cek apakah response punya properti 'results' (artinya Pagination aktif)
+        let dataList = [];
+        
+        if (Array.isArray(response)) {
+            // Jika backend tidak pakai pagination (langsung array)
+            dataList = response;
+        } else if (response.results && Array.isArray(response.results)) {
+            // Jika backend pakai pagination
+            dataList = response.results;
+            
+            // Render Tombol Next/Prev (Bonus)
+            renderPagination(response.next, response.previous);
+        }
+        // -------------------------------
 
-<script src="app.js"></script>
-</body>
+        // Cek jika data kosong
+        if (dataList.length === 0) {
+          listContainer.innerHTML = `
+            <li class="empty-message">
+              Belum ada data warga yang terdaftar
+            </li>`;
+          return;
+        }
+
+        // Loop data
+        dataList.forEach(warga => {
+          const li = document.createElement('li');
+          li.className = 'warga-item';
+          
+          li.innerHTML = `
+            <a href="warga_detail.html?id=${warga.id}" class="warga-link">
+              ${warga.nama_lengkap}
+            </a>
+          `;
+          listContainer.appendChild(li);
+        });
+      }
+
+      // Bonus: Fungsi navigasi Next/Prev
+      function renderPagination(nextUrl, prevUrl) {
+          const container = document.getElementById('pagination-controls');
+          container.innerHTML = ''; // Reset
+
+          if(prevUrl) {
+              const btnPrev = document.createElement('button');
+              btnPrev.innerText = '<< Sebelumnya';
+              btnPrev.onclick = () => fetchWarga(prevUrl);
+              btnPrev.style.marginRight = '10px';
+              container.appendChild(btnPrev);
+          }
+
+          if(nextUrl) {
+              const btnNext = document.createElement('button');
+              btnNext.innerText = 'Selanjutnya >>';
+              btnNext.onclick = () => fetchWarga(nextUrl);
+              container.appendChild(btnNext);
+          }
+      }
+
+      // Jalankan fungsi saat halaman dibuka
+      fetchWarga(currentUrl);
+    </script>
+  </body>
 </html>

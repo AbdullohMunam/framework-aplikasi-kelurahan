@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daftar Pengaduan</title>
+    <style>
+      /* CSS dari pengaduan_list.html */
+      body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+      .container { max-width: 800px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+      h1 { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e8f4fd; padding-bottom: 20px; }
+      ul { margin-top: 20px; padding: 0; list-style: none; }
+      li { background: #fff; border-bottom: 1px solid #eee; padding: 15px 0; display: flex; justify-content: space-between; align-items: center; }
+      .pengaduan-content { flex: 1; }
+      .pengaduan-actions { display: inline-flex; gap: 8px; margin-left: 10px; }
+      .btn-edit { padding: 6px 16px; border-radius: 4px; background: #007bff; color: #fff; border: none; text-decoration: none; font-size: 14px; }
+      .btn-edit:hover { background: #0056b3; }
+      .btn-hapus { padding: 6px 16px; border-radius: 4px; background: #dc3545; color: #fff; border: none; text-decoration: none; font-size: 14px; }
+      .btn-hapus:hover { background: #a71d2a; }
+      .back-link { display: inline-block; background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+      .back-link:hover { background-color: #0056b3; }
+      
+      /* Style tambahan untuk tombol pagination */
+      .pagination { text-align: center; margin-top: 20px; }
+      .btn-page { padding: 8px 15px; margin: 0 5px; cursor: pointer; background: #eee; border: none; border-radius: 4px; }
+      .btn-page:hover { background: #ddd; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Daftar Pengaduan</h1>
+      <ul id="list-pengaduan">
+        <li>Sedang memuat data...</li>
+      </ul>
+      
+      <div id="pagination-controls" class="pagination"></div>
+
+      <a href="index.html" class="back-link">← Kembali ke Daftar Warga</a>
+    </div>
+
+    <script>
+      // Default URL
+      const API_URL = 'http://127.0.0.1:8000/api/pengaduan/';
+
+      // Fungsi fetch menerima parameter url (agar bisa next/prev)
+      async function fetchPengaduan(url) {
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('Gagal mengambil data');
+            const data = await res.json();
+            renderList(data);
+        } catch (error) {
+            document.getElementById('list-pengaduan').innerHTML = `<li style="color:red">Error: ${error.message}</li>`;
+        }
+      }
+
+      function renderList(response) {
+        const ul = document.getElementById('list-pengaduan');
+        ul.innerHTML = '';
+        const controls = document.getElementById('pagination-controls');
+        controls.innerHTML = '';
+
+        // --- LOGIKA DETEKSI PAGINATION (Sama seperti index.html) ---
+        let listData = [];
+
+        if (response.results && Array.isArray(response.results)) {
+            // Jika ada pagination
+            listData = response.results;
+            
+            // Render tombol Previous
+            if (response.previous) {
+                const btnPrev = document.createElement('button');
+                btnPrev.className = 'btn-page';
+                btnPrev.innerText = '<< Sebelumnya';
+                btnPrev.onclick = () => fetchPengaduan(response.previous);
+                controls.appendChild(btnPrev);
+            }
+
+            // Render tombol Next
+            if (response.next) {
+                const btnNext = document.createElement('button');
+                btnNext.className = 'btn-page';
+                btnNext.innerText = 'Selanjutnya >>';
+                btnNext.onclick = () => fetchPengaduan(response.next);
+                controls.appendChild(btnNext);
+            }
+
+        } else if (Array.isArray(response)) {
+            // Jika tidak ada pagination (langsung array)
+            listData = response;
+        }
+        // -----------------------------------------------------------
+
+        if (listData.length === 0) {
+            ul.innerHTML = '<li>Belum ada data pengaduan yang terdaftar</li>';
+            return;
+        }
+
+        // Loop menggunakan listData yang sudah dipastikan Array
+        listData.forEach(item => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <div class="pengaduan-content">
+                    <strong>${item.judul}</strong>
+                    <br><small>${item.deskripsi}</small>
+                </div>
+                <span class="pengaduan-actions">
+                    <a href="pengaduan_form.html?id=${item.id}" class="btn-edit">Edit</a>
+                    <a href="pengaduan_delete.html?id=${item.id}" class="btn-hapus">Hapus</a>
+                </span>
+            `;
+            ul.appendChild(li);
+        });
+      }
+
+      // Jalankan pertama kali
+      fetchPengaduan(API_URL);
+    </script>
+  </body>
+</html>

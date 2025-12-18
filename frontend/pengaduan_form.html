@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Form Pengaduan</title>
+    <style>
+      /* Style dari pengaduan_form.html asli */
+      body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+      .container { max-width: 800px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+      h1 { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e8f4fd; padding-bottom: 20px; }
+      form { margin-top: 20px; display: flex; flex-direction: column; gap: 15px; }
+      label { font-weight: bold; margin-bottom: 5px; display: block; }
+      input, textarea, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+      button { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; width: fit-content; }
+      button:hover { background-color: #0056b3; }
+      .back-link { display: inline-block; background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 id="page-title">Form Pengaduan Baru</h1>
+      <form id="pengaduanForm">
+        
+        <div>
+            <label>Pelapor (Warga):</label>
+            <select id="warga" required>
+                <option value="">-- Pilih Warga --</option>
+            </select>
+        </div>
+
+        <div>
+            <label>Judul Pengaduan:</label>
+            <input type="text" id="judul" required>
+        </div>
+
+        <div>
+            <label>Isi Pengaduan:</label>
+            <textarea id="deskripsi" rows="4" required></textarea>
+        </div>
+
+        <button type="submit">Kirim Pengaduan</button>
+      </form>
+      <a href="pengaduan_list.html" class="back-link">← Kembali ke Daftar Pengaduan</a>
+    </div>
+
+<script>
+      const API_PENGADUAN = 'http://127.0.0.1:8000/api/pengaduan/';
+      const API_WARGA = 'http://127.0.0.1:8000/api/warga/';
+      
+      const id = new URLSearchParams(window.location.search).get('id');
+
+      // 1. Isi Dropdown Warga
+      async function loadWarga() {
+          try {
+              const res = await fetch(API_WARGA);
+              const data = await res.json();
+              
+              let listWarga = [];
+              if (data.results) listWarga = data.results;
+              else if (Array.isArray(data)) listWarga = data;
+
+              const select = document.getElementById('warga');
+              listWarga.forEach(w => {
+                  const opt = document.createElement('option');
+                  opt.value = w.id;
+                  opt.innerText = `${w.nama_lengkap} (NIK: ${w.nik})`;
+                  select.appendChild(opt);
+              });
+          } catch (e) { console.error('Gagal load warga', e); }
+      }
+
+      // 2. Load Data jika Edit
+      async function loadEditData() {
+          if (!id) return;
+          document.getElementById('page-title').innerText = 'Edit Pengaduan';
+          
+          try {
+              const res = await fetch(`${API_PENGADUAN}${id}/`);
+              const data = await res.json();
+              
+              document.getElementById('judul').value = data.judul;
+              document.getElementById('deskripsi').value = data.deskripsi;
+              
+              // PERBAIKAN 1: Menyesuaikan nama field saat load data juga (data.pelapor)
+              // Jika backend mengirim 'pelapor', kita pakai itu. Jika 'warga', pakai 'warga'.
+              if (data.pelapor) {
+                  document.getElementById('warga').value = data.pelapor;
+              } else if (data.warga) {
+                  document.getElementById('warga').value = data.warga;
+              }
+              
+          } catch (e) { console.error(e); }
+      }
+
+      (async () => {
+          await loadWarga();
+          await loadEditData();
+      })();
+
+      // 3. Handle Submit
+      document.getElementById('pengaduanForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const wargaId = document.getElementById('warga').value;
+          
+          if (!wargaId) {
+              alert("Mohon pilih Pelapor (Warga) terlebih dahulu!");
+              return;
+          }
+
+          // PERBAIKAN 2: Sesuaikan nama key dan value status
+          const payload = {
+              pelapor: wargaId,  // <-- UBAH DARI 'warga' JADI 'pelapor' (Sesuai Error)
+              judul: document.getElementById('judul').value,
+              deskripsi: document.getElementById('deskripsi').value,
+              status: 'pending'  // <-- UBAH JADI HURUF KECIL (Coba 'pending', 'baru', atau '0')
+          };
+
+          let url = API_PENGADUAN;
+          let method = 'POST';
+          if (id) {
+              url += `${id}/`;
+              method = 'PUT';
+          }
+
+          try {
+              const res = await fetch(url, {
+                  method: method,
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(payload)
+              });
+
+              if(res.ok) {
+                  alert('Pengaduan berhasil disimpan!');
+                  window.location.href = 'pengaduan_list.html';
+              } else {
+                  const errJson = await res.json();
+                  console.log("Error Detail:", errJson);
+                  // Tampilkan pesan error yang lebih mudah dibaca
+                  let errorMsg = 'Gagal menyimpan:\n';
+                  for (const [key, value] of Object.entries(errJson)) {
+                      errorMsg += `- ${key}: ${value}\n`;
+                  }
+                  alert(errorMsg);
+              }
+          } catch (error) {
+              console.error(error);
+              alert('Terjadi kesalahan koneksi ke server.');
+          }
+      });
+    </script>
+  </body>
+</html>

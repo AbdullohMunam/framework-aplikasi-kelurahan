@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Form Warga</title>
+    <style>
+      /* Style dari warga_form.html asli */
+      body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+      .container { max-width: 800px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+      h1 { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e8f4fd; padding-bottom: 20px; }
+      form { margin-top: 20px; display: flex; flex-direction: column; gap: 15px; }
+      label { font-weight: bold; margin-bottom: 5px; display: block; }
+      input, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+      button { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; width: fit-content; }
+      button:hover { background-color: #0056b3; }
+      .back-link { display: inline-block; background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 id="page-title">Form Pendaftaran Warga</h1>
+      <form id="wargaForm">
+        <div>
+            <label>NIK:</label>
+            <input type="text" id="nik" required>
+        </div>
+        <div>
+            <label>Nama Lengkap:</label>
+            <input type="text" id="nama_lengkap" required>
+        </div>
+        <div>
+            <label>Alamat:</label>
+            <textarea id="alamat" rows="3" required></textarea>
+        </div>
+        <div>
+            <label>No. Telepon:</label>
+            <input type="text" id="no_telepon">
+        </div>
+        <button type="submit">Simpan</button>
+      </form>
+      <a href="index.html" class="back-link">← Kembali ke Daftar Warga</a>
+    </div>
+
+    <script>
+      const API_URL = 'http://127.0.0.1:8000/api/warga/';
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get('id');
+
+      // Jika ada ID, berarti mode EDIT
+      if (id) {
+          document.getElementById('page-title').innerText = 'Edit Data Warga';
+          fetch(`${API_URL}${id}/`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('nik').value = data.nik;
+                document.getElementById('nama_lengkap').value = data.nama_lengkap;
+                document.getElementById('alamat').value = data.alamat;
+                document.getElementById('no_telepon').value = data.no_telepon;
+            })
+            .catch(err => alert('Gagal memuat data: ' + err));
+      }
+
+      document.getElementById('wargaForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const payload = {
+              nik: document.getElementById('nik').value,
+              nama_lengkap: document.getElementById('nama_lengkap').value,
+              alamat: document.getElementById('alamat').value,
+              no_telepon: document.getElementById('no_telepon').value
+          };
+
+          try {
+              let url = API_URL;
+              let method = 'POST';
+              
+              if (id) { // Mode Edit
+                  url += `${id}/`;
+                  method = 'PUT';
+              }
+
+              const res = await fetch(url, {
+                  method: method,
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify(payload)
+              });
+
+              if (res.ok) {
+                  alert('Data berhasil disimpan');
+                  window.location.href = 'index.html';
+              } else {
+                  const err = await res.json();
+                  alert('Gagal: ' + JSON.stringify(err));
+              }
+          } catch (error) {
+              alert('Error koneksi');
+          }
+      });
+    </script>
+  </body>
+</html>

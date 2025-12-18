@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Daftar Pengaduan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+            <h1 class="h4 mb-0">Daftar Pengaduan</h1>
+            <div>
+                <a href="index.html" class="btn btn-sm btn-secondary">Kembali ke Data Warga</a>
+                <button id="add-pengaduan-btn" class="btn btn-sm btn-primary">Buat Pengaduan</button>
+                <button onclick="logout()" class="btn btn-sm btn-danger ms-2">Logout</button>
+            </div>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <div id="pengaduan-list-container">
+            <div class="d-flex justify-content-center my-5">
+                <div class="spinner-border" role="status"><span class="visually-hidden">Memuat...</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="pengaduanModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pengaduanModalLabel">Form Pengaduan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="pengaduan-form">
+                        <input type="hidden" id="pengaduan-id">
+                        
+                        <div class="mb-3">
+                            <label for="pengaduan-pelapor" class="form-label">Pelapor (Warga)</label>
+                            <select id="pengaduan-pelapor" class="form-select" required>
+                                <option value="">-- Sedang memuat data warga... --</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="pengaduan-judul" class="form-label">Judul Pengaduan</label>
+                            <input type="text" id="pengaduan-judul" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="pengaduan-status" class="form-label">Status</label>
+                            <select id="pengaduan-status" class="form-select" required>
+                                <option value="BARU">Baru</option>
+                                <option value="DIPROSES">Diproses</option>
+                                <option value="SELESAI">Selesai</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="pengaduan-deskripsi" class="form-label">Isi Pengaduan</label>
+                            <textarea id="pengaduan-deskripsi" class="form-control" rows="4" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" id="pengaduan-save-btn" class="btn btn-primary">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <p class="mb-3">Yakin ingin menghapus pengaduan ini?</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                        <button type="button" id="confirm-delete-btn" class="btn btn-danger btn-sm">Hapus</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // === KONFIGURASI API ===
+        const API_PENGADUAN = 'http://127.0.0.1:8000/api/pengaduan/';
+        const API_WARGA = 'http://127.0.0.1:8000/api/warga/';
+
+        // Cek Login
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        const container = document.getElementById('pengaduan-list-container');
+        const alertBox = document.getElementById('alert-container');
+        
+        const pengaduanModal = new bootstrap.Modal(document.getElementById('pengaduanModal'));
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+        // === FUNGSI UTAMA ===
+
+        // 1. Load Data Pengaduan
+        async function loadPengaduan() {
+            container.innerHTML = '<div class="d-flex justify-content-center my-5"><div class="spinner-border" role="status"></div></div>';
+            
+            try {
+                const resp = await fetch(API_PENGADUAN, {
+                    headers: { 'Authorization': 'Token ' + token }
+                });
+
+                if (resp.status === 401) {
+                    logout();
+                    return;
+                }
+                if (!resp.ok) throw new Error('Gagal mengambil data');
+
+                const data = await resp.json();
+                const list = Array.isArray(data) ? data : (data.results ? data.results : []);
+                renderList(list);
+                
+            } catch (err) {
+                console.error(err);
+                showAlert('danger', 'Gagal memuat data pengaduan.');
+            }
+        }
+
+        // 2. Render Kartu Pengaduan
+        function renderList(list) {
+            container.innerHTML = '';
+
+            if (list.length === 0) {
+                showAlert('info', 'Belum ada pengaduan. Klik tombol "Buat Pengaduan".');
+                return;
+            }
+
+            const row = document.createElement('div');
+            row.className = 'row';
+
+            list.forEach((item, index) => {
+                const col = document.createElement('div');
+                col.className = 'col-12 col-md-6 mb-3';
+
+                const card = document.createElement('div');
+                card.className = 'card h-100 shadow-sm';
+                
+                const judul = escapeHtml(item.judul);
+                const deskripsi = escapeHtml(item.deskripsi);
+                const status = escapeHtml(item.status || 'BARU'); // Default BARU jika null
+                
+                // Logic Badge Warna berdasarkan Status (BARU, DIPROSES, SELESAI)
+                let badgeClass = 'bg-secondary';
+                if(status === 'DIPROSES') badgeClass = 'bg-warning text-dark';
+                if(status === 'SELESAI') badgeClass = 'bg-success';
+
+                // Tampilkan Pelapor dengan aman
+                let pelaporDisplay = '-';
+                if (item.pelapor && typeof item.pelapor === 'object') {
+                    pelaporDisplay = item.pelapor.nama_lengkap || item.pelapor.nama;
+                } else if (item.warga_nama) {
+                     pelaporDisplay = item.warga_nama;
+                } else if (item.pelapor) {
+                    pelaporDisplay = 'ID: ' + item.pelapor; // Jika API cuma kirim ID
+                }
+
+                card.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0 text-truncate" title="${judul}">${judul}</h5>
+                            <span class="badge ${badgeClass}">${status}</span>
+                        </div>
+                        <h6 class="card-subtitle mb-3 text-muted">
+                            <small>Pelapor: ${pelaporDisplay}</small>
+                        </h6>
+                        <p class="card-text text-truncate">${deskripsi}</p>
+                        
+                        <div class="mt-3 pt-2 border-top d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary btn-edit" 
+                                data-index="${index}" 
+                                data-id="${item.id}">Edit</button>
+                            <button class="btn btn-sm btn-outline-danger btn-delete" 
+                                data-id="${item.id}">Hapus</button>
+                        </div>
+                    </div>
+                `;
+                col.appendChild(card);
+                row.appendChild(col);
+            });
+
+            container.appendChild(row);
+            attachHandlers(list);
+        }
+
+        // 3. Load Data Warga untuk Dropdown
+        async function loadWargaOptions() {
+            try {
+                const resp = await fetch(API_WARGA, {
+                    headers: { 'Authorization': 'Token ' + token }
+                });
+                const data = await resp.json();
+                const listWarga = Array.isArray(data) ? data : (data.results ? data.results : []);
+
+                const select = document.getElementById('pengaduan-pelapor');
+                select.innerHTML = '<option value="">-- Pilih Warga --</option>';
+
+                listWarga.forEach(w => {
+                    const option = document.createElement('option');
+                    option.value = w.id;
+                    option.text = `${w.nama_lengkap} (NIK: ${w.nik})`;
+                    select.appendChild(option);
+                });
+
+            } catch (err) {
+                console.error('Gagal load warga', err);
+            }
+        }
+
+        // 4. Handle Tombol Edit & Hapus
+        function attachHandlers(list) {
+            document.querySelectorAll('.btn-edit').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = btn.dataset.index;
+                    const data = list[idx];
+
+                    document.getElementById('pengaduan-id').value = data.id;
+                    document.getElementById('pengaduan-judul').value = data.judul;
+                    document.getElementById('pengaduan-deskripsi').value = data.deskripsi;
+                    
+                    // Set Status (Pastikan value dropdown match dengan data API)
+                    document.getElementById('pengaduan-status').value = data.status || 'BARU';
+
+                    // Set Pelapor
+                    let pelaporId = '';
+                    if (data.pelapor && typeof data.pelapor === 'object') {
+                        pelaporId = data.pelapor.id;
+                    } else {
+                        pelaporId = data.pelapor; // Jika format flat ID
+                    }
+                    document.getElementById('pengaduan-pelapor').value = pelaporId;
+
+                    document.getElementById('pengaduanModalLabel').innerText = "Edit Pengaduan";
+                    pengaduanModal.show();
+                });
+            });
+
+            document.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.dataset.id;
+                    document.getElementById('confirm-delete-btn').dataset.id = id;
+                    deleteModal.show();
+                });
+            });
+        }
+
+        // 5. Simpan Data (Tambah / Edit)
+        document.getElementById('pengaduan-save-btn').addEventListener('click', async () => {
+            const id = document.getElementById('pengaduan-id').value;
+            const pelapor = document.getElementById('pengaduan-pelapor').value;
+            const judul = document.getElementById('pengaduan-judul').value;
+            const deskripsi = document.getElementById('pengaduan-deskripsi').value;
+            const status = document.getElementById('pengaduan-status').value; 
+
+            if (!pelapor || !judul || !deskripsi || !status) {
+                alert("Semua kolom wajib diisi!");
+                return;
+            }
+
+            const payload = {
+                pelapor: pelapor,
+                judul: judul,
+                deskripsi: deskripsi,
+                status: status 
+            };
+
+            const url = id ? `${API_PENGADUAN}${id}/` : API_PENGADUAN;
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const resp = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Token ' + token
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!resp.ok) {
+                    const errData = await resp.json();
+                    let errMsg = "Gagal menyimpan:\n";
+                    for (const [key, value] of Object.entries(errData)) {
+                        errMsg += `- ${key}: ${value}\n`;
+                    }
+                    alert(errMsg);
+                    return;
+                }
+
+                pengaduanModal.hide();
+                loadPengaduan(); 
+                showAlert('success', id ? 'Pengaduan berhasil diperbarui.' : 'Pengaduan berhasil dibuat.');
+
+            } catch (err) {
+                console.error(err);
+                alert("Terjadi kesalahan koneksi.");
+            }
+        });
+
+        // 6. Eksekusi Hapus
+        document.getElementById('confirm-delete-btn').addEventListener('click', async (e) => {
+            const id = e.target.dataset.id;
+            try {
+                const resp = await fetch(`${API_PENGADUAN}${id}/`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Token ' + token }
+                });
+
+                if (resp.ok) {
+                    deleteModal.hide();
+                    loadPengaduan();
+                    showAlert('success', 'Data berhasil dihapus.');
+                } else {
+                    alert("Gagal menghapus data.");
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        });
+
+        document.getElementById('add-pengaduan-btn').addEventListener('click', () => {
+            document.getElementById('pengaduan-form').reset();
+            document.getElementById('pengaduan-id').value = '';
+            // Set default status ke BARU saat tambah
+            document.getElementById('pengaduan-status').value = 'BARU'; 
+            document.getElementById('pengaduanModalLabel').innerText = "Buat Pengaduan Baru";
+            pengaduanModal.show();
+        });
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            window.location.href = 'login.html';
+        }
+
+        function escapeHtml(text) {
+            if (!text) return "";
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function showAlert(type, msg) {
+            alertBox.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${msg}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadWargaOptions();
+            loadPengaduan();
+        });
+
+    </script>
+</body>
+</html>
