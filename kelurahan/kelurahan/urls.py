@@ -19,6 +19,8 @@ from django.urls import path, include
 from django.shortcuts import redirect
 from warga.views import PengaduanListView
 from rest_framework.authtoken.views import obtain_auth_token
+from rest_framework.authtoken.views import obtain_auth_token
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,4 +30,9 @@ urlpatterns = [
     path('', lambda request: redirect('/warga/', permanent=True)),
     path('api/', include('warga.api_urls')),  # API routes now have names like 'api-pengaduan-list'
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),  # DRF's login/logout views
+
+    # --- API schema & docs (drf-spectacular) ---
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]

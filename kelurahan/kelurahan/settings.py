@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'django_filters',
     'corsheaders',
+    'drf_spectacular',
 ]
 
 # MIDDLEWARE = [
@@ -155,6 +156,7 @@ REST_FRAMEWORK = {
 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # CORS_ALLOW_ALL_ORIGINS = True
@@ -163,3 +165,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5500",
     # "http://127.0.0.1:3000",
 ]
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'API Aplikasi Warga Kelurahan',
+    'DESCRIPTION': 'Dokumentasi API untuk mengelola data warga dan pengaduan.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
